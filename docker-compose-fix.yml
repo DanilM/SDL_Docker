@@ -1,0 +1,53 @@
+version: '3'
+
+name: 'sdl_docker'
+services:
+  web:
+    container_name: 'web'
+    image: nginx:1.11-alpine
+    pid: "host"
+    build: .
+    ports:
+      - 11280:11280
+    mem_limit: 6mb
+    cpu_shares: 1024
+    depends_on:
+      - db
+    security_opt:
+      - no-new-privileges:true
+    restart: on-failure:5
+    privileged: false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11280/"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+
+  db:
+    container_name: 'db'
+    image: postgres
+    pid: "host"
+    ports:
+      - "5432:5432"
+    mem_limit: 1g
+    cpu_shares: 2048
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: database
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: on-failure:5
+    privileged: false
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5m
+      timeout: 10s
+      retries: 5
+
+volumes:
+  web-data:
+  db-data:
+
+networks:
+  mynetwork:
