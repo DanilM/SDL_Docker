@@ -2,6 +2,7 @@ version: '3'
 
 services:
   web:
+    image: nginx:1.11-alpine
     build: .
     ports:
       - "80:80"
